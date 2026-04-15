@@ -123,6 +123,16 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       };
     }
 
+    case 'LOAD_STATE': {
+      return {
+        ...state,
+        templateName: action.payload.templateName,
+        blocks: action.payload.blocks,
+        selectedBlockId: null,
+        history: { past: [], future: [] },
+      };
+    }
+
     default:
       return state;
   }

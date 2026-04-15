@@ -251,4 +251,5 @@ export type EditorAction =
   | { type: 'SET_TEMPLATE_NAME'; payload: string }
   | { type: 'SET_PREVIEW_MODE'; payload: 'desktop' | 'mobile' }
   | { type: 'UNDO' }
-  | { type: 'REDO' };
+  | { type: 'REDO' }
+  | { type: 'LOAD_STATE'; payload: { templateName: string; blocks: Block[] } };

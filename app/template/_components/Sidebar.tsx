@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import ContentTab from './sidebar/ContentTab';
+import BodyTab from './sidebar/BodyTab';
 
 const TABS = [
   { id: 'content', label: 'Content', icon: '⊿' },
@@ -21,9 +22,7 @@ export default function Sidebar() {
         {activeTab === 'blocks' && (
           <div className="p-4 text-sm text-gray-400 text-center">Pre-built blocks coming soon</div>
         )}
-        {activeTab === 'body' && (
-          <div className="p-4 text-sm text-gray-400 text-center">Body styles coming soon</div>
-        )}
+        {activeTab === 'body' && <BodyTab />}
         {activeTab === 'images' && (
           <div className="p-4 text-sm text-gray-400 text-center">Image library coming soon</div>
         )}

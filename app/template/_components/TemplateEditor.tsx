@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useReducer, createContext, useContext, useCallback } from 'react';
+import React, { useReducer, createContext, useContext, useCallback, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
   pointerWithin,
   PointerSensor,
+  MouseSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
@@ -36,38 +37,48 @@ export function useEditor() {
 
 export default function TemplateEditor() {
   const [state, dispatch] = useReducer(editorReducer, initialEditorState);
-  const [activeId, setActiveId] = React.useState<string | null>(null);
   const [activePaletteType, setActivePaletteType] = React.useState<string | null>(null);
 
+  // Load saved state from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('template-editor-save');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.blocks && data.templateName) {
+          dispatch({ type: 'LOAD_STATE', payload: data });
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, []);
+
   const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    const { active } = event;
-    const data = active.data.current;
+    const data = event.active.data.current;
     if (data?.source === 'palette') {
       setActivePaletteType(data.blockType as string);
-      setActiveId(null);
-    } else {
-      setActiveId(active.id as string);
-      setActivePaletteType(null);
     }
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
-    setActiveId(null);
     setActivePaletteType(null);
 
     if (!over) return;
 
     const activeData = active.data.current;
 
-    // Dragging from palette
+    // Dragging from palette into canvas
     if (activeData?.source === 'palette') {
       const blockType = activeData.blockType as BlockType;
       const newBlock = createBlock(blockType);
+      // If dropped on an existing block, insert before it; otherwise append
       const overIndex = state.blocks.findIndex((b) => b.id === over.id);
       const insertIndex = overIndex >= 0 ? overIndex : state.blocks.length;
       dispatch({ type: 'ADD_BLOCK', payload: { block: newBlock, index: insertIndex } });
@@ -88,18 +99,21 @@ export default function TemplateEditor() {
 
   return (
     <EditorContext value={{ state, dispatch }}>
-      <div className="flex flex-col h-screen bg-gray-100">
-        <EditorHeader />
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <EditorToolbar />
-            <DndContext
-              sensors={sensors}
-              collisionDetection={pointerWithin}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            >
-              <div className="flex-1 overflow-auto p-6 bg-gray-200">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={pointerWithin}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex flex-col h-screen bg-gray-100">
+          <EditorHeader />
+          <div className="flex flex-1 overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <EditorToolbar />
+              <div
+                className="flex-1 overflow-auto p-6 bg-gray-200"
+                onClick={() => dispatch({ type: 'SELECT_BLOCK', payload: { id: null } })}
+              >
                 <div
                   className="mx-auto bg-white shadow-sm"
                   style={{
@@ -115,20 +129,20 @@ export default function TemplateEditor() {
                   </SortableContext>
                 </div>
               </div>
-              <DragOverlay>
-                {activePaletteType && (
-                  <div className="bg-white border-2 border-blue-400 rounded-lg px-4 py-2 shadow-lg opacity-80 text-sm font-medium">
-                    {activePaletteType}
-                  </div>
-                )}
-              </DragOverlay>
-            </DndContext>
-          </div>
-          <div className="w-80 border-l border-gray-200 bg-white overflow-y-auto flex-shrink-0">
-            {selectedBlock ? <PropertiesPanel block={selectedBlock} /> : <Sidebar />}
+            </div>
+            <div className="w-80 border-l border-gray-200 bg-white overflow-y-auto flex-shrink-0">
+              {selectedBlock ? <PropertiesPanel block={selectedBlock} /> : <Sidebar />}
+            </div>
           </div>
         </div>
-      </div>
+        <DragOverlay dropAnimation={null}>
+          {activePaletteType && (
+            <div className="bg-white border-2 border-blue-400 rounded-lg px-4 py-3 shadow-lg text-sm font-medium capitalize">
+              {activePaletteType}
+            </div>
+          )}
+        </DragOverlay>
+      </DndContext>
     </EditorContext>
   );
 }

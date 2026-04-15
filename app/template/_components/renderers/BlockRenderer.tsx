@@ -20,8 +20,8 @@ export default function BlockRenderer({ block }: { block: Block }) {
     case 'columns': return <ColumnsRenderer properties={props} />;
     case 'button': return <ButtonRenderer properties={props} />;
     case 'divider': return <DividerRenderer properties={props} />;
-    case 'heading': return <HeadingRenderer properties={props} />;
-    case 'paragraph': return <ParagraphRenderer properties={props} />;
+    case 'heading': return <HeadingRenderer properties={props} blockId={block.id} />;
+    case 'paragraph': return <ParagraphRenderer properties={props} blockId={block.id} />;
     case 'image': return <ImageRenderer properties={props} />;
     case 'video': return <VideoRenderer properties={props} />;
     case 'social': return <SocialRenderer properties={props} />;
