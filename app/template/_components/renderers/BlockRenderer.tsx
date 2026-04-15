@@ -17,7 +17,7 @@ export default function BlockRenderer({ block }: { block: Block }) {
   const props = block.properties;
 
   switch (props.type) {
-    case 'columns': return <ColumnsRenderer properties={props} />;
+    case 'columns': return <ColumnsRenderer properties={props} parentId={block.id} />;
     case 'button': return <ButtonRenderer properties={props} />;
     case 'divider': return <DividerRenderer properties={props} />;
     case 'heading': return <HeadingRenderer properties={props} blockId={block.id} />;

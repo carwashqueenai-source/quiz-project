@@ -13,6 +13,7 @@ export default function EditorHeader() {
     const data = {
       templateName: state.templateName,
       blocks: state.blocks,
+      bodyStyles: state.bodyStyles,
     };
     localStorage.setItem('template-editor-save', JSON.stringify(data));
     setSaveStatus('Saved!');

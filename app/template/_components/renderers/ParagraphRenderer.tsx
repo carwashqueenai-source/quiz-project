@@ -22,6 +22,7 @@ export default function ParagraphRenderer({ properties: p, blockId }: Props) {
   const { dispatch } = useEditor();
 
   const editor = useTiptap({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({ heading: false, codeBlock: false }),
       Underline,

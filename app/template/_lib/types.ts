@@ -230,11 +230,24 @@ export interface Block {
   properties: BlockProperties;
 }
 
+export interface BodyStyles {
+  bgColor: string;
+  contentBgColor: string;
+  contentWidth: number;
+  fontFamily: string;
+  fontWeight: string;
+  fontSize: number;
+  textColor: string;
+  linkColor: string;
+  preheaderText: string;
+}
+
 export interface EditorState {
   templateName: string;
   blocks: Block[];
   selectedBlockId: string | null;
   previewMode: 'desktop' | 'mobile';
+  bodyStyles: BodyStyles;
   history: {
     past: Block[][];
     future: Block[][];
@@ -250,6 +263,9 @@ export type EditorAction =
   | { type: 'UPDATE_BLOCK_PROPS'; payload: { id: string; properties: Partial<BlockProperties> } }
   | { type: 'SET_TEMPLATE_NAME'; payload: string }
   | { type: 'SET_PREVIEW_MODE'; payload: 'desktop' | 'mobile' }
+  | { type: 'ADD_NESTED_BLOCK'; payload: { parentId: string; columnIndex: number; block: Block; index: number } }
+  | { type: 'REMOVE_NESTED_BLOCK'; payload: { parentId: string; columnIndex: number; blockId: string } }
   | { type: 'UNDO' }
   | { type: 'REDO' }
-  | { type: 'LOAD_STATE'; payload: { templateName: string; blocks: Block[] } };
+  | { type: 'LOAD_STATE'; payload: { templateName: string; blocks: Block[]; bodyStyles?: BodyStyles } }
+  | { type: 'UPDATE_BODY_STYLES'; payload: Partial<BodyStyles> };

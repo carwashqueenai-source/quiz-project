@@ -1,11 +1,24 @@
-import type { EditorState, EditorAction, Block } from './types';
+import type { EditorState, EditorAction, Block, BodyStyles } from './types';
 import { v4 as uuid } from 'uuid';
+
+export const defaultBodyStyles: BodyStyles = {
+  bgColor: '#f7f7f7',
+  contentBgColor: '#ffffff',
+  contentWidth: 600,
+  fontFamily: 'Arial, sans-serif',
+  fontWeight: '400',
+  fontSize: 14,
+  textColor: '#333333',
+  linkColor: '#3b82f6',
+  preheaderText: '',
+};
 
 export const initialEditorState: EditorState = {
   templateName: 'Untitled Template',
   blocks: [],
   selectedBlockId: null,
   previewMode: 'desktop',
+  bodyStyles: { ...defaultBodyStyles },
   history: { past: [], future: [] },
 };
 
@@ -95,6 +108,49 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return { ...state, previewMode: action.payload };
     }
 
+    case 'ADD_NESTED_BLOCK': {
+      const { parentId, columnIndex, block, index } = action.payload;
+      return {
+        ...state,
+        blocks: state.blocks.map((b) => {
+          if (b.id !== parentId || b.properties.type !== 'columns') return b;
+          const cols = [...(b.properties as any).columns];
+          const col = { ...cols[columnIndex] };
+          const blocks = [...col.blocks];
+          blocks.splice(index, 0, block);
+          col.blocks = blocks;
+          cols[columnIndex] = col;
+          return { ...b, properties: { ...b.properties, columns: cols } };
+        }),
+        selectedBlockId: block.id,
+        history: pushHistory(state),
+      };
+    }
+
+    case 'REMOVE_NESTED_BLOCK': {
+      const { parentId, columnIndex, blockId } = action.payload;
+      return {
+        ...state,
+        blocks: state.blocks.map((b) => {
+          if (b.id !== parentId || b.properties.type !== 'columns') return b;
+          const cols = [...(b.properties as any).columns];
+          const col = { ...cols[columnIndex] };
+          col.blocks = col.blocks.filter((nb: Block) => nb.id !== blockId);
+          cols[columnIndex] = col;
+          return { ...b, properties: { ...b.properties, columns: cols } };
+        }),
+        selectedBlockId: state.selectedBlockId === blockId ? null : state.selectedBlockId,
+        history: pushHistory(state),
+      };
+    }
+
+    case 'UPDATE_BODY_STYLES': {
+      return {
+        ...state,
+        bodyStyles: { ...state.bodyStyles, ...action.payload },
+      };
+    }
+
     case 'UNDO': {
       if (state.history.past.length === 0) return state;
       const previous = state.history.past[state.history.past.length - 1];
@@ -128,6 +184,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         ...state,
         templateName: action.payload.templateName,
         blocks: action.payload.blocks,
+        bodyStyles: action.payload.bodyStyles ?? state.bodyStyles,
         selectedBlockId: null,
         history: { past: [], future: [] },
       };

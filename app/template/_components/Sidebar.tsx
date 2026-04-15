@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import ContentTab from './sidebar/ContentTab';
+import BlocksTab from './sidebar/BlocksTab';
 import BodyTab from './sidebar/BodyTab';
+import ImagesTab from './sidebar/ImagesTab';
+import UploadsTab from './sidebar/UploadsTab';
 
 const TABS = [
   { id: 'content', label: 'Content', icon: '⊿' },
@@ -19,16 +22,10 @@ export default function Sidebar() {
     <div className="flex h-full">
       <div className="flex-1 overflow-y-auto">
         {activeTab === 'content' && <ContentTab />}
-        {activeTab === 'blocks' && (
-          <div className="p-4 text-sm text-gray-400 text-center">Pre-built blocks coming soon</div>
-        )}
+        {activeTab === 'blocks' && <BlocksTab />}
         {activeTab === 'body' && <BodyTab />}
-        {activeTab === 'images' && (
-          <div className="p-4 text-sm text-gray-400 text-center">Image library coming soon</div>
-        )}
-        {activeTab === 'uploads' && (
-          <div className="p-4 text-sm text-gray-400 text-center">Uploads coming soon</div>
-        )}
+        {activeTab === 'images' && <ImagesTab />}
+        {activeTab === 'uploads' && <UploadsTab />}
       </div>
       <div className="flex flex-col items-center border-l border-gray-200 bg-gray-50 py-2 px-1 gap-1">
         {TABS.map((tab) => (

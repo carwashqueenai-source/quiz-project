@@ -21,6 +21,7 @@ export default function HeadingRenderer({ properties: p, blockId }: Props) {
   const fontSize = p.fontSize || sizeMap[p.headingType] || 22;
 
   const editor = useTiptap({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({ heading: false, codeBlock: false, blockquote: false, bulletList: false, orderedList: false, listItem: false, horizontalRule: false }),
       Underline,

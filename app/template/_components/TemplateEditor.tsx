@@ -74,11 +74,27 @@ export default function TemplateEditor() {
 
     const activeData = active.data.current;
 
-    // Dragging from palette into canvas
+    // Dragging from palette
     if (activeData?.source === 'palette') {
       const blockType = activeData.blockType as BlockType;
       const newBlock = createBlock(blockType);
-      // If dropped on an existing block, insert before it; otherwise append
+
+      // Check if dropping into a column cell
+      const overData = over.data.current;
+      if (overData?.type === 'column-cell') {
+        dispatch({
+          type: 'ADD_NESTED_BLOCK',
+          payload: {
+            parentId: overData.parentId as string,
+            columnIndex: overData.columnIndex as number,
+            block: newBlock,
+            index: 0,
+          },
+        });
+        return;
+      }
+
+      // Otherwise drop into main canvas
       const overIndex = state.blocks.findIndex((b) => b.id === over.id);
       const insertIndex = overIndex >= 0 ? overIndex : state.blocks.length;
       dispatch({ type: 'ADD_BLOCK', payload: { block: newBlock, index: insertIndex } });
@@ -111,13 +127,19 @@ export default function TemplateEditor() {
             <div className="flex-1 flex flex-col overflow-hidden">
               <EditorToolbar />
               <div
-                className="flex-1 overflow-auto p-6 bg-gray-200"
+                className="flex-1 overflow-auto p-6"
+                style={{ backgroundColor: state.bodyStyles.bgColor }}
                 onClick={() => dispatch({ type: 'SELECT_BLOCK', payload: { id: null } })}
               >
                 <div
-                  className="mx-auto bg-white shadow-sm"
+                  className="mx-auto shadow-sm"
                   style={{
-                    maxWidth: state.previewMode === 'desktop' ? '800px' : '375px',
+                    maxWidth: state.previewMode === 'desktop' ? `${state.bodyStyles.contentWidth}px` : '375px',
+                    backgroundColor: state.bodyStyles.contentBgColor,
+                    fontFamily: state.bodyStyles.fontFamily,
+                    fontWeight: state.bodyStyles.fontWeight,
+                    fontSize: `${state.bodyStyles.fontSize}px`,
+                    color: state.bodyStyles.textColor,
                     transition: 'max-width 0.3s ease',
                   }}
                 >
